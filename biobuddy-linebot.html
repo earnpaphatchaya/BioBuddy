@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZeroBurn — เปลี่ยนเศษวัสดุการเกษตรให้มีมูลค่า</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Tokens ── */
+  :root {
+    --soil:    #2D2416;
+    --bark:    #4A3728;
+    --leaf:    #1D6A3A;
+    --leaf-l:  #2A8F4F;
+    --mist:    #E8F2EC;
+    --sky:     #D4EBE0;
+    --amber:   #C8820A;
+    --amber-l: #F5E0B0;
+    --smoke:   #6B7C73;
+    --paper:   #F7F5F0;
+    --white:   #FFFFFF;
+    --mono:    'IBM Plex Mono', monospace;
+    --sans:    'Sarabun', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--soil);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px;
+    height: 56px;
+    background: rgba(247,245,240,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(45,36,22,0.08);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--leaf);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    font-size: 14px;
+    color: var(--smoke);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .nav-links a:hover { color: var(--soil); }
+  .nav-cta {
+    font-size: 13px; font-weight: 500;
+    background: var(--leaf);
+    color: #fff;
+    border: none; border-radius: 6px;
+    padding: 7px 18px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s, transform .1s;
+  }
+  .nav-cta:hover { background: var(--leaf-l); }
+  .nav-cta:active { transform: scale(0.98); }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 120px 40px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 60px;
+    align-items: center;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--leaf);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--soil);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--leaf);
+    font-weight: 600;
+  }
+  .hero-desc {
+    font-size: 17px;
+    color: var(--smoke);
+    max-width: 460px;
+    margin-bottom: 36px;
+    line-height: 1.7;
+  }
+  .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--leaf); color: #fff;
+    padding: 12px 24px; border-radius: 8px;
+    font-size: 15px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .btn-primary:hover { background: var(--leaf-l); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--soil);
+    padding: 12px 24px; border-radius: 8px;
+    font-size: 15px; font-weight: 400;
+    text-decoration: none;
+    border: 1px solid rgba(45,36,22,0.2);
+    transition: border-color .15s, background .15s;
+  }
+  .btn-secondary:hover { background: rgba(45,36,22,0.04); border-color: rgba(45,36,22,0.35); }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    background: var(--soil);
+    color: #fff;
+    padding: 28px 40px;
+  }
+  .stats-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 28px; font-weight: 500;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-num span { color: var(--leaf-l); }
+  .stat-label { font-size: 13px; color: rgba(255,255,255,0.55); }
+
+  /* ── Section common ── */
+  section { padding: 80px 40px; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.12em;
+    color: var(--leaf); text-transform: uppercase;
+    margin-bottom: 12px; display: block;
+  }
+  h2 {
+    font-size: clamp(24px, 3.5vw, 36px);
+    font-weight: 300; letter-spacing: -0.02em;
+    color: var(--soil); line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  h2 strong { font-weight: 600; }
+  .section-sub {
+    font-size: 16px; color: var(--smoke);
+    max-width: 520px; line-height: 1.7;
+    margin-bottom: 52px;
+  }
+
+  /* ── How it works ── */
+  .how { background: var(--white); }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: rgba(45,36,22,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .step {
+    background: var(--white);
+    padding: 36px 32px;
+    position: relative;
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 500;
+    color: var(--leaf); letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+  .step-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  .step h3 {
+    font-size: 17px; font-weight: 600;
+    color: var(--soil);
+    margin-bottom: 10px; line-height: 1.3;
+  }
+  .step p { font-size: 14px; color: var(--smoke); line-height: 1.65; }
+
+  /* ── Features ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .feat-card {
+    background: var(--white);
+    border: 1px solid rgba(45,36,22,0.08);
+    border-radius: 12px;
+    padding: 32px;
+    transition: border-color .2s, transform .2s;
+  }
+  .feat-card:hover { border-color: var(--leaf); transform: translateY(-2px); }
+  .feat-icon {
+    width: 44px; height: 44px;
+    background: var(--mist);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  .feat-card h3 { font-size: 16px; font-weight: 600; color: var(--soil); margin-bottom: 8px; }
+  .feat-card p { font-size: 14px; color: var(--smoke); line-height: 1.65; }
+  .feat-tag {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.06em;
+    color: var(--leaf);
+    background: var(--mist);
+    padding: 3px 10px; border-radius: 4px;
+  }
+
+  /* ── Phone mockup ── */
+  .phone-section {
+    background: var(--soil);
+    color: #fff;
+    overflow: hidden;
+  }
+  .phone-section .section-tag { color: var(--leaf-l); }
+  .phone-section h2 { color: #fff; }
+  .phone-section .section-sub { color: rgba(255,255,255,0.55); }
+
+  .phone-wrap {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 60px;
+    align-items: start;
+  }
+  .chat-list { display: flex; flex-direction: column; gap: 10px; }
+  .chat-screen {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .chat-screen:hover { background: rgba(255,255,255,0.1); }
+  .chat-screen.active-chat {
+    background: rgba(29,106,58,0.25);
+    border-color: rgba(42,143,79,0.4);
+  }
+  .chat-screen-label {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.06em;
+    color: var(--leaf-l); margin-bottom: 10px;
+  }
+  .chat-bubble-row { display: flex; flex-direction: column; gap: 6px; }
+  .cb { font-size: 13px; line-height: 1.45; padding: 7px 12px; border-radius: 10px; max-width: 85%; }
+  .cb.bot { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); align-self: flex-start; border-bottom-left-radius: 3px; }
+  .cb.user { background: var(--leaf); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .c-chip {
+    font-size: 11px; padding: 3px 9px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; color: rgba(255,255,255,0.7);
+  }
+  .result-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; overflow: hidden; margin-top: 6px;
+  }
+  .result-card-img {
+    height: 40px;
+    background: linear-gradient(90deg, rgba(29,106,58,0.6), rgba(29,106,58,0.3));
+    display: flex; align-items: center; padding: 0 12px;
+    font-size: 14px;
+  }
+  .result-card-body { padding: 10px 12px; }
+  .result-card-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9); }
+  .result-card-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+  .result-card-btn {
+    margin-top: 8px; width: 100%;
+    padding: 6px; font-size: 11px; font-weight: 500;
+    background: var(--leaf); color: #fff;
+    border: none; border-radius: 6px; cursor: pointer;
+  }
+
+  /* right side detail */
+  .feature-detail { display: flex; flex-direction: column; gap: 20px; }
+  .fd-item {
+    display: flex; gap: 14px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .fd-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .fd-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--leaf-l);
+    margin-top: 8px; flex-shrink: 0;
+  }
+  .fd-title { font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9); margin-bottom: 5px; }
+  .fd-desc { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.6; }
+
+  /* ── Carbon section ── */
+  .carbon { background: var(--mist); }
+  .carbon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: rgba(29,106,58,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .carbon-card {
+    background: var(--white);
+    padding: 32px;
+    text-align: center;
+  }
+  .carbon-num {
+    font-family: var(--mono);
+    font-size: 36px; font-weight: 500;
+    color: var(--leaf);
+    line-height: 1; margin-bottom: 8px;
+  }
+  .carbon-unit { font-size: 13px; color: var(--smoke); }
+
+  /* ── CTA ── */
+  .cta-section {
+    background: var(--leaf);
+    color: #fff;
+    text-align: center;
+    padding: 80px 40px;
+  }
+  .cta-section h2 { color: #fff; margin-bottom: 16px; }
+  .cta-section p { color: rgba(255,255,255,0.7); font-size: 17px; margin-bottom: 36px; }
+  .cta-line-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: #fff; color: var(--leaf);
+    padding: 14px 28px; border-radius: 8px;
+    font-size: 16px; font-weight: 600;
+    text-decoration: none;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .cta-line-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--soil); color: rgba(255,255,255,0.35);
+    padding: 32px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px;
+  }
+  footer a { color: rgba(255,255,255,0.35); text-decoration: none; }
+  .footer-logo { font-family: var(--mono); color: rgba(255,255,255,0.6); font-size: 14px; }
+
+  /* ── Hero right: field visual ── */
+  .hero-visual {
+    position: relative;
+    height: 400px;
+    background: var(--sky);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .field-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg,
+        #B8D8C8 0%,
+        #8FC4A4 35%,
+        #2D5E3A 60%,
+        #1A3D26 100%
+      );
+  }
+  .field-sun {
+    position: absolute;
+    top: 28px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 60px;
+    background: radial-gradient(circle, #FFF0A0 0%, #F5C842 40%, rgba(245,200,66,0) 100%);
+    border-radius: 50%;
+    opacity: 0.85;
+  }
+  .field-stalks {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: flex-end;
+    justify-content: center; gap: 4px;
+    padding: 0 16px;
+  }
+  .stalk {
+    width: 6px;
+    background: linear-gradient(180deg, #8FC44A 0%, #5A8A28 100%);
+    border-radius: 3px 3px 0 0;
+    animation: sway 3s ease-in-out infinite;
+  }
+  @keyframes sway {
+    0%,100% { transform: rotate(0deg); transform-origin: bottom; }
+    50% { transform: rotate(3deg); transform-origin: bottom; }
+  }
+  .field-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(0deg, rgba(45,94,58,0.9) 0%, transparent 60%);
+    padding: 24px;
+    z-index: 1;
+  }
+  .field-stat {
+    display: inline-flex; flex-direction: column;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #fff;
+    min-width: 120px;
+    margin-right: 10px;
+  }
+  .field-stat-num { font-family: var(--mono); font-size: 22px; font-weight: 500; }
+  .field-stat-label { font-size: 11px; opacity: 0.65; margin-top: 2px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 100px 20px 60px; }
+    .hero-visual { height: 240px; }
+    .stats-inner { grid-template-columns: repeat(2,1fr); }
+    section { padding: 60px 20px; }
+    .steps { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .phone-wrap { grid-template-columns: 1fr; }
+    .carbon-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stalk { animation: none; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-logo" href="#">ZeroBurn</a>
+  <ul class="nav-links">
+    <li><a href="#how">วิธีการทำงาน</a></li>
+    <li><a href="#features">ฟีเจอร์</a></li>
+    <li><a href="#carbon">คาร์บอน</a></li>
+  </ul>
+  <a class="nav-cta" href="#cta">เพิ่มเพื่อนใน Line</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div>
+    <p class="hero-eyebrow">// zero burn platform</p>
+    <h1>เปลี่ยน<em>เศษวัสดุ</em><br>การเกษตร<br>ให้มีมูลค่า</h1>
+    <p class="hero-desc">แพลตฟอร์มเชื่อมเกษตรกรกับโรงไฟฟ้าชีวมวล ลดการเผา ลด PM2.5 และสร้างรายได้จากสิ่งที่เคยทิ้ง</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="#cta">🌿 เริ่มขายชีวมวล</a>
+      <a class="btn-secondary" href="#how">ดูวิธีการทำงาน</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="field-bg"></div>
+    <div class="field-sun"></div>
+    <div class="field-stalks">
+      <!-- dynamic stalks from JS -->
+    </div>
+    <div class="field-overlay">
+      <div class="field-stat">
+        <span class="field-stat-num">850</span>
+        <span class="field-stat-label">บ./ตัน ราคาวันนี้</span>
+      </div>
+      <div class="field-stat">
+        <span class="field-stat-num">3.2</span>
+        <span class="field-stat-label">tCO₂ ต่อออเดอร์</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div>
+      <div class="stat-num">1.2<span>M</span></div>
+      <div class="stat-label">ตันชีวมวลต่อปีในไทย</div>
+    </div>
+    <div>
+      <div class="stat-num">PM<span>2.5</span></div>
+      <div class="stat-label">ลดได้จากไม่เผา</div>
+    </div>
+    <div>
+      <div class="stat-num">3</div>
+      <div class="stat-label">ฝ่ายที่ได้ประโยชน์</div>
+    </div>
+    <div>
+      <div class="stat-num">0<span>%</span></div>
+      <div class="stat-label">ค่าสมัครสมาชิก</div>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<section class="how" id="how">
+  <div class="section-inner">
+    <span class="section-tag">วิธีการทำงาน</span>
+    <h2>ง่าย ๆ 3 ขั้นตอน<br><strong>จากแปลงถึงโรงไฟฟ้า</strong></h2>
+    <p class="section-sub">เกษตรกรไม่ต้องรู้ระบบซับซ้อน แค่มีมือถือก็เริ่มได้ทันที</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01 — ลงทะเบียน</div>
+        <div class="step-icon">📍</div>
+        <h3>ส่ง Location แปลง</h3>
+        <p>เพิ่ม Line Bot แล้วส่งพิกัดแปลงของคุณ ระบบจะประเมินพื้นที่และชนิดชีวมวลจากดาวเทียมโดยอัตโนมัติ</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02 — ลงประกาศ</div>
+        <div class="step-icon">🌾</div>
+        <h3>ระบุชนิดและน้ำหนัก</h3>
+        <p>เลือกประเภทชีวมวล (ใบอ้อย, ซังข้าวโพด, ฟางข้าว) และปริมาณ ระบบจับคู่กับผู้รับซื้อที่ใกล้ที่สุดให้อัตโนมัติ</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03 — รับเงิน</div>
+        <div class="step-icon">💰</div>
+        <h3>รถมารับ โอนเงินทันที</h3>
+        <p>รถบรรทุกวิ่งเส้นทางที่คำนวณแล้ว มารับที่แปลง คุณได้รับเงินโอนพร้อมกับคาร์บอนเครดิตสะสม</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="section-inner">
+    <span class="section-tag">ฟีเจอร์</span>
+    <h2>เทคโนโลยีที่ทำงาน<br><strong>เบื้องหลังให้คุณ</strong></h2>
+    <p class="section-sub">ระบบ AI และ GIS ประมวลผลข้อมูลที่ซับซ้อน ส่งผลลัพธ์ง่าย ๆ มาที่ Line</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🛰️</div>
+        <h3>GIS & Satellite Mapping</h3>
+        <p>วิเคราะห์ภาพถ่ายดาวเทียมเพื่อประเมินพิกัดและปริมาณชีวมวลในแต่ละแปลง สร้าง Heatmap แสดงจุดที่มีวัสดุหนาแน่น</p>
+        <span class="feat-tag">ข้อมูล real-time</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🗺️</div>
+        <h3>Smart Route Optimization</h3>
+        <p>อัลกอริทึม Clustering จัดกลุ่มแปลงและคำนวณเส้นทางรถบรรทุกที่คุ้มค่าน้ำมันที่สุด ลดต้นทุนโลจิสติกส์ลงได้ถึง 30%</p>
+        <span class="feat-tag">ประหยัดต้นทุน</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🌿</div>
+        <h3>Carbon Credit Tracker</h3>
+        <p>คำนวณปริมาณ CO₂ ที่ลดได้จากการขายแทนการเผา สะสมเป็นเครดิตรายเดือน พร้อมรายงานมาตรฐาน T-VER</p>
+        <span class="feat-tag">มาตรฐาน T-VER</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <h3>Data as a Service</h3>
+        <p>ข้อมูลแผนที่วัตถุดิบรายเดือนสำหรับโรงไฟฟ้าและบริษัทพลังงาน วางแผนการผลิตล่วงหน้าได้อย่างแม่นยำ</p>
+        <span class="feat-tag">สำหรับผู้รับซื้อ</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Phone / Line Bot screens -->
+<section class="phone-section" id="linebot">
+  <div class="section-inner">
+    <span class="section-tag">Line Bot</span>
+    <h2>ใช้งานผ่าน Line<br><strong>ที่คุณมีอยู่แล้ว</strong></h2>
+    <p class="section-sub">ไม่ต้องโหลดแอปใหม่ ทุกอย่างอยู่ใน Line — ลงทะเบียน ลงชีวมวล ติดตามออเดอร์ ดูเงิน</p>
+    <div class="phone-wrap">
+      <div class="chat-list">
+        <div class="chat-screen active-chat" onclick="setActive(this)">
+          <div class="chat-screen-label">// ลงทะเบียนครั้งแรก</div>
+          <div class="chat-bubble-row">
+            <div class="cb bot">สวัสดีครับ 👋 ยินดีต้อนรับสู่ ZeroBurn เพื่อเริ่มต้น กรุณาลงทะเบียนก่อนนะครับ</div>
+            <div class="chip-row"><span class="c-chip">📝 ลงทะเบียน</span><span class="c-chip">🔍 ดูข้อมูลก่อน</span></div>
+            <div class="cb user">ลงทะเบียน</div>
+            <div class="cb bot">กรุณาส่ง Location พื้นที่แปลงของท่านครับ</div>
+            <div class="cb user">📍 ส่ง Location</div>
+            <div class="cb bot">✅ รับข้อมูลแล้วครับ (จ.สุพรรณบุรี)<br>ลงทะเบียนสำเร็จ!</div>
+          </div>
+        </div>
+        <div class="chat-screen" onclick="setActive(this)">
+          <div class="chat-screen-label">// ลงชีวมวล</div>
+          <div class="chat-bubble-row">
+            <div class="cb bot">ชีวมวลของท่านเป็นประเภทอะไรครับ?</div>
+            <div class="chip-row"><span class="c-chip">🌾 ใบอ้อย</span><span class="c-chip">🌽 ซังข้าวโพด</span><span class="c-chip">🌾 ฟางข้าว</span></div>
+            <div class="cb user">ใบอ้อย</div>
+            <div class="cb bot">ประมาณกี่ตันครับ?</div>
+            <div class="cb user">5 ตัน</div>
+            <div class="cb bot">🎉 ลงประกาศสำเร็จ!<br>ราคาวันนี้: <b>850 บ./ตัน</b><br>คาดรับเงิน: ~4,250 บ.</div>
+          </div>
+        </div>
+        <div class="chat-screen" onclick="setActive(this)">
+          <div class="chat-screen-label">// สรุปคาร์บอนเครดิต</div>
+          <div class="chat-bubble-row">
+            <div class="cb bot">📊 รายงานเดือน มิ.ย. ของคุณสมชาย</div>
+            <div class="result-card">
+              <div class="result-card-img">🌿</div>
+              <div class="result-card-body">
+                <div class="result-card-title">ชีวมวล 5 ตัน → ลดคาร์บอน 3.2 tCO₂</div>
+                <div class="result-card-sub">เครดิตสะสม: 3.2 คะแนน | มูลค่า ~480 บ.</div>
+                <button class="result-card-btn">ดูรายละเอียด</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-detail">
+        <div class="fd-item">
+          <div class="fd-dot"></div>
+          <div>
+            <div class="fd-title">ลงทะเบียนใน 2 นาที</div>
+            <div class="fd-desc">ส่งชื่อและ Location เท่านั้น ไม่ต้องกรอกฟอร์มยาว ระบบดึงข้อมูลพื้นที่จากดาวเทียมให้อัตโนมัติ</div>
+          </div>
+        </div>
+        <div class="fd-item">
+          <div class="fd-dot"></div>
+          <div>
+            <div class="fd-title">Quick Reply ไม่ต้องพิมพ์เยอะ</div>
+            <div class="fd-desc">ปุ่มตอบเร็วสำหรับทุก step ทำงานได้แม้สัญญาณอินเทอร์เน็ตไม่แรง</div>
+          </div>
+        </div>
+        <div class="fd-item">
+          <div class="fd-dot"></div>
+          <div>
+            <div class="fd-title">แจ้งเตือนทุก status</div>
+            <div class="fd-desc">Bot Push Notification เมื่อมีผู้รับซื้อ เมื่อรถออกเดินทาง และเมื่อโอนเงินสำเร็จ</div>
+          </div>
+        </div>
+        <div class="fd-item">
+          <div class="fd-dot"></div>
+          <div>
+            <div class="fd-title">Flex Card รายงานสวยงาม</div>
+            <div class="fd-desc">สรุปยอดขาย รายได้ และคาร์บอนเครดิตในรูปการ์ดที่อ่านง่าย ส่งมาทุกสิ้นเดือน</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Carbon section -->
+<section class="carbon" id="carbon">
+  <div class="section-inner">
+    <span class="section-tag">คาร์บอนเครดิต</span>
+    <h2>ขายชีวมวล ได้<strong>เครดิต</strong><br>แทนการเผาทิ้ง</h2>
+    <p class="section-sub">ทุกตันที่ขายผ่าน ZeroBurn แทนการเผา เท่ากับลดคาร์บอนที่วัดได้จริง</p>
+    <div class="carbon-grid">
+      <div class="carbon-card">
+        <div class="carbon-num">0.64</div>
+        <div class="carbon-unit">tCO₂ ต่อตันชีวมวล<br><small style="color:#aaa">สูตรคำนวณมาตรฐาน IPCC</small></div>
+      </div>
+      <div class="carbon-card">
+        <div class="carbon-num">5</div>
+        <div class="carbon-unit">tCO₂ สะสม → แจ้งเตือนพิเศษ<br><small style="color:#aaa">พร้อมรายงาน T-VER</small></div>
+      </div>
+      <div class="carbon-card">
+        <div class="carbon-num">~150</div>
+        <div class="carbon-unit">บ. ต่อ tCO₂ ราคาตลาดปัจจุบัน<br><small style="color:#aaa">อ้างอิงตลาดคาร์บอนไทย</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <h2>พร้อมเริ่มต้นแล้วหรือยัง?</h2>
+  <p>เพิ่มเพื่อน ZeroBurn Bot ใน Line และลงทะเบียนได้ฟรีทันที<br>ไม่มีค่าใช้จ่าย ไม่ต้องโหลดแอปใหม่</p>
+  <a class="cta-line-btn" href="#">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2C6.48 2 2 6.02 2 11c0 4.16 2.72 7.69 6.52 9.09.48.09.65-.21.65-.46v-1.6c-2.65.58-3.21-1.27-3.21-1.27-.43-1.1-1.06-1.39-1.06-1.39-.87-.59.06-.58.06-.58.96.07 1.47.99 1.47.99.85 1.46 2.23 1.04 2.78.79.09-.61.33-1.04.6-1.28-2.12-.24-4.34-1.06-4.34-4.72 0-1.04.37-1.9.99-2.56-.1-.24-.43-1.21.09-2.52 0 0 .81-.26 2.65.99.77-.21 1.59-.32 2.41-.32.82 0 1.64.11 2.41.32 1.84-1.25 2.65-.99 2.65-.99.52 1.31.19 2.28.09 2.52.62.66.99 1.52.99 2.56 0 3.67-2.23 4.48-4.35 4.72.34.29.65.88.65 1.77v2.62c0 .25.17.56.66.46C19.28 18.69 22 15.16 22 11c0-4.98-4.48-9-10-9z" fill="#06C755"/>
+    </svg>
+    เพิ่มเพื่อนใน Line ฟรี
+  </a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <span class="footer-logo">ZeroBurn</span>
+  <span>© 2025 ZeroBurn Platform · ลด PM2.5 ด้วยชีวมวล</span>
+  <span><a href="#">นโยบายความเป็นส่วนตัว</a></span>
+</footer>
+
+<script>
+  // Grow random stalks
+  const stalksEl = document.querySelector('.field-stalks');
+  for (let i = 0; i < 28; i++) {
+    const s = document.createElement('div');
+    s.className = 'stalk';
+    const h = 60 + Math.random() * 80;
+    const d = (Math.random() * 1.5).toFixed(2);
+    s.style.cssText = `height:${h}px;animation-delay:${d}s;opacity:${0.6+Math.random()*0.4}`;
+    stalksEl.appendChild(s);
+  }
+
+  // Chat screen toggle
+  function setActive(el) {
+    document.querySelectorAll('.chat-screen').forEach(s => s.classList.remove('active-chat'));
+    el.classList.add('active-chat');
+  }
+
+  // Smooth scroll for nav
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+    });
+  });
+</script>
+</body>
+</html>
