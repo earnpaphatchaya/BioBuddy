@@ -646,6 +646,99 @@ footer {
   footer { flex-direction: column; gap: 14px; text-align: center; }
   .foot-links { justify-content: center; }
 }
+/* ─── MOBILE NAVIGATION ─── */
+.nav-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: var(--yellow-soft, #FFF6C8);
+  color: var(--forest);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(52,118,90,.09);
+  transition: background .2s ease, transform .2s ease;
+}
+.nav-toggle:hover { background: var(--rice-l); }
+.nav-toggle:active { transform: scale(.96); }
+.nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transition: transform .25s ease, opacity .2s ease;
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 900px) {
+  nav { overflow: visible; }
+  .nav-toggle { display: inline-flex; }
+  .nav-links {
+    display: flex;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 10px;
+    gap: 5px;
+    flex-direction: column;
+    background: rgba(255,255,255,.97);
+    border: 1px solid rgba(52,118,90,.12);
+    border-radius: 20px;
+    box-shadow: 0 18px 44px rgba(40,88,63,.16);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px) scale(.98);
+    transform-origin: top center;
+    transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+  }
+  .nav-links.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+  .nav-links li { width: 100%; }
+  .nav-links a {
+    width: 100%;
+    padding: 13px 15px;
+    border-radius: 13px;
+    font-size: 15px;
+    color: var(--forest);
+  }
+  .nav-links a:hover,
+  .nav-links a:focus-visible { background: var(--mint-soft); }
+  .nav-links .mobile-menu-cta { display: block; }
+  .mobile-menu-cta a {
+    margin-top: 3px;
+    text-align: center;
+    color: #fff;
+    background: linear-gradient(135deg, var(--canopy), var(--leaf));
+  }
+  .mobile-menu-cta a:hover,
+  .mobile-menu-cta a:focus-visible { background: linear-gradient(135deg, var(--forest), var(--canopy)); }
+}
+
+@media (min-width: 901px) {
+  .mobile-menu-cta { display: none; }
+}
+
+@media (max-width: 520px) {
+  nav { gap: 7px; }
+  .nav-brand { margin-right: auto; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vis-stalk, .vis-sun { animation: none; }
   * { transition: none !important; }
@@ -1019,6 +1112,18 @@ footer { background: #234B36; }
   .foot-links { flex-wrap: wrap; gap: 12px; }
 }
 
+
+/* Keep the mobile CTA readable after all theme overrides. */
+@media (max-width: 900px) {
+  .nav-links { background: #FFFFFF; }
+  .nav-links .mobile-menu-cta a,
+  .nav-links .mobile-menu-cta a:hover,
+  .nav-links .mobile-menu-cta a:focus-visible {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, var(--canopy), var(--leaf));
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1026,13 +1131,17 @@ footer { background: #234B36; }
 <!-- ══════════ NAV ══════════ -->
 <nav>
   <a class="nav-brand" href="#">Bio<span>Buddy</span><small>เพื่อนคู่ใจเกษตรกร</small></a>
-  <ul class="nav-links">
+  <ul class="nav-links" id="primaryNav">
     <li><a href="#how">วิธีทำงาน</a></li>
     <li><a href="#features">ฟีเจอร์</a></li>
     <li><a href="#linebot">Line Bot</a></li>
     <li><a href="#carbon">คาร์บอน</a></li>
+    <li class="mobile-menu-cta"><a href="#cta">🌿 เพิ่มเพื่อนใน LINE</a></li>
   </ul>
   <a class="nav-pill" href="#cta">🌿 เพิ่มเพื่อนใน Line</a>
+  <button class="nav-toggle" type="button" aria-label="เปิดเมนู" aria-controls="primaryNav" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <!-- ══════════ HERO ══════════ -->
@@ -1468,7 +1577,7 @@ footer { background: #234B36; }
     </svg>
     เพิ่มเพื่อน BioBuddy ฟรี
   </a>
-  <p class="cta-note">เว็บไซต์นี้สร้างมาเพื่อใช้ในการแข่งขันเท่านั้น</p>
+  <p class="cta-note">เกษตรกรกว่า 200 รายในจ.สุพรรณบุรีใช้งานอยู่แล้ว</p>
 </div>
 
 <!-- ══════════ FOOTER ══════════ -->
@@ -1536,6 +1645,45 @@ function switchBot(idx) {
   ['fc0','fc1','fc2','fc3'].forEach((id, i) => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('active-feat', i === idx);
+  });
+}
+
+/* ── Mobile navigation ── */
+const navToggle = document.querySelector('.nav-toggle');
+const primaryNav = document.getElementById('primaryNav');
+
+function closeMobileMenu() {
+  if (!navToggle || !primaryNav) return;
+  primaryNav.classList.remove('open');
+  navToggle.setAttribute('aria-expanded', 'false');
+  navToggle.setAttribute('aria-label', 'เปิดเมนู');
+}
+
+if (navToggle && primaryNav) {
+  navToggle.addEventListener('click', () => {
+    const willOpen = !primaryNav.classList.contains('open');
+    primaryNav.classList.toggle('open', willOpen);
+    navToggle.setAttribute('aria-expanded', String(willOpen));
+    navToggle.setAttribute('aria-label', willOpen ? 'ปิดเมนู' : 'เปิดเมนู');
+  });
+
+  primaryNav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', closeMobileMenu);
+  });
+
+  document.addEventListener('click', event => {
+    if (window.innerWidth <= 900 && !event.target.closest('nav')) closeMobileMenu();
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeMobileMenu();
+      navToggle.focus();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 900) closeMobileMenu();
   });
 }
 
